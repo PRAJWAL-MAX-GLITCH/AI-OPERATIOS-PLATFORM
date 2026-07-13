@@ -8,6 +8,7 @@ from app.models.validation import ValidationReport
 from app.models.preprocessing import PreprocessingReport
 from app.models.training import TrainingJob
 from app.models.evaluation import EvaluationJob
+from app.models.serving import PredictionLog
 
 __all__ = [
     "Base",
@@ -18,5 +19,6 @@ __all__ = [
     "PreprocessingReport",
     "TrainingJob",
     "EvaluationJob",
+    "PredictionLog",
 ]
 
