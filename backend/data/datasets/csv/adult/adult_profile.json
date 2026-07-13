@@ -1,0 +1,29 @@
+{
+  "total_rows": 32561,
+  "total_columns": 15,
+  "missing_cells": 4262,
+  "missing_pct": 0.87,
+  "income_distribution": {
+    "<=50K": 24720,
+    ">50K": 7841
+  },
+  "age_stats": {
+    "mean": 38.58,
+    "min": 17,
+    "max": 90
+  },
+  "top_occupations": {
+    "Prof-specialty": 4140,
+    "Craft-repair": 4099,
+    "Exec-managerial": 4066,
+    "Adm-clerical": 3770,
+    "Sales": 3650
+  },
+  "top_education": {
+    "HS-grad": 10501,
+    "Some-college": 7291,
+    "Bachelors": 5355,
+    "Masters": 1723,
+    "Assoc-voc": 1382
+  }
+}
