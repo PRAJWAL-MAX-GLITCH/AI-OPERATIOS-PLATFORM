@@ -21,6 +21,8 @@ from app.schemas.evaluation import EvaluationRequest
 from app.services.evaluation.config import AutoMLConfig, CVConfig
 from app.services.evaluation.automl_pipeline import run_automl_pipeline
 from app.services.training.serializer import save_model
+from app.services.mlops.experiment_tracker import experiment_tracker
+from app.services.mlops.model_registry import model_registry
 from app.core.exceptions import ForbiddenError, ResourceNotFoundError
 
 logger = structlog.get_logger(__name__)
@@ -109,6 +111,33 @@ class EvaluationService:
             job.best_model_path = model_path
             job.leaderboard = result["leaderboard"]
             job.report = result["report"]
+            
+            # 6. Log to MLflow
+            try:
+                best_run_id = None
+                for entry in result["leaderboard"]:
+                    # MLflow run for each algorithm evaluated
+                    run_id = experiment_tracker.log_training_run(
+                        project_id=str(project_id),
+                        dataset_id=str(dataset_id),
+                        dataset_name=dataset.name,
+                        algorithm=entry["algorithm"],
+                        metrics=entry["metrics"],
+                        params={}, # Default params for AutoML
+                        model=result["best_model_instance"] if entry["algorithm"] == result["best_algorithm"] else None,
+                        run_name=f"AutoML_{entry['algorithm']}"
+                    )
+                    if entry["algorithm"] == result["best_algorithm"]:
+                        best_run_id = run_id
+                
+                # Register Best Model in MLflow
+                if best_run_id:
+                    model_name = f"Project_{project_id}_{dataset_id}"
+                    model_registry.register_model(best_run_id, model_name)
+                    logger.info("mlflow_automl_best_model_registered", model_name=model_name)
+                    
+            except Exception as mlf_exc:
+                logger.warning("mlflow_logging_failed", error=str(mlf_exc))
             
             logger.info("evaluation_job_completed", job_id=str(job.id), best_algo=job.best_algorithm)
             

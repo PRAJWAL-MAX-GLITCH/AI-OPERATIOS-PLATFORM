@@ -21,6 +21,7 @@ from app.schemas.training import TrainingRequest
 from app.services.training.config import TrainingConfig, SplitConfig
 from app.services.training.pipeline import run_training_pipeline
 from app.services.training.serializer import save_model
+from app.services.mlops.experiment_tracker import experiment_tracker
 from app.core.exceptions import ForbiddenError, ResourceNotFoundError
 
 logger = structlog.get_logger(__name__)
@@ -112,6 +113,21 @@ class TrainingService:
             job.status     = "completed"
             job.model_path = model_path
             job.metrics    = result.metrics
+            
+            # 6. Log to MLflow
+            try:
+                run_id = experiment_tracker.log_training_run(
+                    project_id=str(project_id),
+                    dataset_id=str(dataset_id),
+                    dataset_name=dataset.name,
+                    algorithm=request.algorithm,
+                    metrics=result.metrics,
+                    params=request.parameters or {},
+                    model=result.model
+                )
+                logger.info("mlflow_integrated_training", run_id=run_id)
+            except Exception as mlf_exc:
+                logger.warning("mlflow_logging_failed", error=str(mlf_exc))
             
             logger.info(
                 "training_job_completed",
