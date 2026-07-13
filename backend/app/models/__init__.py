@@ -9,6 +9,7 @@ from app.models.preprocessing import PreprocessingReport
 from app.models.training import TrainingJob
 from app.models.evaluation import EvaluationJob
 from app.models.serving import PredictionLog
+from app.models.deep_learning import DLTrainingJob
 
 __all__ = [
     "Base",
@@ -20,5 +21,6 @@ __all__ = [
     "TrainingJob",
     "EvaluationJob",
     "PredictionLog",
+    "DLTrainingJob",
 ]
 

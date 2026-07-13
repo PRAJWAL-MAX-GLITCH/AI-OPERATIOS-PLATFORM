@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1 import health, auth, users, projects, datasets, validation, preprocessing, training, evaluation, mlops, serving
+from app.api.v1 import health, auth, users, projects, datasets, validation, preprocessing, training, evaluation, mlops, serving, deep_learning
 
 api_router = APIRouter()
 
@@ -14,3 +14,5 @@ api_router.include_router(training.router, tags=["training"])
 api_router.include_router(evaluation.router, tags=["evaluation"])
 api_router.include_router(mlops.router, prefix="/mlops", tags=["mlops"])
 api_router.include_router(serving.router, tags=["serving"])
+api_router.include_router(deep_learning.router, tags=["deep-learning"])
+
