@@ -10,6 +10,7 @@ from app.models.training import TrainingJob
 from app.models.evaluation import EvaluationJob
 from app.models.serving import PredictionLog
 from app.models.deep_learning import DLTrainingJob
+from app.models.rag import KnowledgeBase, RAGDocument, RAGChunk, RAGIndex, RetrievalLog
 
 __all__ = [
     "Base",
@@ -22,5 +23,7 @@ __all__ = [
     "EvaluationJob",
     "PredictionLog",
     "DLTrainingJob",
+    "KnowledgeBase", "RAGDocument", "RAGChunk", "RAGIndex", "RetrievalLog",
 ]
+
 
