@@ -4,14 +4,15 @@ Agent API Router
 Endpoints for interacting with the Enterprise AI Agent Platform.
 """
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, desc
 
 from app.core.database import get_db_session
 from app.api.dependencies import get_current_user
 from app.models.domain import User
-from app.models.agent import AgentTask, AgentRun
+from app.models.agent import AgentTask, AgentRun, AgentMessage
 from app.schemas.agents import AgentRunRequest, AgentTaskResponse, AgentRunStatusResponse, AgentHistoryResponse
 from app.schemas.common import ResponseModel
 from app.services.agents.core.registry import AgentRegistry
@@ -53,6 +54,7 @@ async def run_agent_sync(
     task = AgentTask(
         user_id=current_user.id,
         project_id=request.project_id,
+        agent_type=request.agent_type,
         title=request.task_title,
         description=request.task_description,
         status="pending"
@@ -98,6 +100,7 @@ async def enqueue_agent_task(
     task = AgentTask(
         user_id=current_user.id,
         project_id=request.project_id,
+        agent_type=request.agent_type,
         title=request.task_title,
         description=request.task_description,
         status="pending"
@@ -156,4 +159,127 @@ async def get_task_history(
     return ResponseModel(
         message="Task history retrieved",
         data={"messages": history}
+    )
+
+
+@router.get("/tasks", response_model=ResponseModel)
+async def list_user_tasks(
+    status_filter: Optional[str] = Query(None, alias="status"),
+    agent_type: Optional[str] = Query(None),
+    limit: int = Query(50, le=200),
+    offset: int = Query(0),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_user)
+):
+    """List all agent tasks submitted by the current user, newest first."""
+    stmt = (
+        select(AgentTask)
+        .where(AgentTask.user_id == current_user.id)
+        .order_by(desc(AgentTask.created_at))
+        .limit(limit)
+        .offset(offset)
+    )
+    if status_filter:
+        stmt = stmt.where(AgentTask.status == status_filter)
+    if agent_type:
+        stmt = stmt.where(AgentTask.agent_type == agent_type)
+
+    result = await db.execute(stmt)
+    tasks = result.scalars().all()
+
+    return ResponseModel(
+        message="Tasks retrieved",
+        data={
+            "tasks": [
+                {
+                    "task_id": str(t.id),
+                    "agent_type": t.agent_type,
+                    "title": t.title,
+                    "description": t.description,
+                    "status": t.status,
+                    "error_message": t.error_message,
+                    "created_at": t.created_at.isoformat() if t.created_at else None,
+                    "updated_at": t.updated_at.isoformat() if t.updated_at else None,
+                }
+                for t in tasks
+            ],
+            "total": len(tasks),
+        }
+    )
+
+
+@router.post("/tasks/{task_id}/cancel", response_model=ResponseModel)
+async def cancel_task(
+    task_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_user)
+):
+    """Cancel a pending or running agent task."""
+    task = await db.get(AgentTask, task_id)
+    if not task or task.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    if task.status not in ("pending", "running"):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot cancel a task with status '{task.status}'"
+        )
+
+    task.status = "cancelled"
+    task.error_message = "Cancelled by user."
+    await db.commit()
+
+    return ResponseModel(
+        message="Task cancelled",
+        data={"task_id": str(task.id), "status": "cancelled"}
+    )
+
+
+@router.get("/tasks/{task_id}/runs", response_model=ResponseModel)
+async def get_task_runs(
+    task_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_user)
+):
+    """List all agent run records for a task, with their messages."""
+    task = await db.get(AgentTask, task_id)
+    if not task or task.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    stmt = select(AgentRun).where(AgentRun.task_id == task_id).order_by(AgentRun.created_at)
+    result = await db.execute(stmt)
+    runs = result.scalars().all()
+
+    run_data = []
+    for run in runs:
+        msgs_stmt = select(AgentMessage).where(AgentMessage.run_id == run.id).order_by(AgentMessage.step_index)
+        msgs_result = await db.execute(msgs_stmt)
+        messages = msgs_result.scalars().all()
+        run_data.append({
+            "run_id": str(run.id),
+            "agent_type": run.agent_type,
+            "status": run.status,
+            "started_at": run.started_at,
+            "completed_at": run.completed_at,
+            "duration_ms": run.duration_ms,
+            "steps_taken": run.steps_taken,
+            "tools_used": run.tools_used,
+            "final_output": run.final_output,
+            "messages": [
+                {
+                    "role": m.role,
+                    "content": m.content,
+                    "tool_name": m.tool_name,
+                    "tool_input": m.tool_input,
+                    "tool_output": m.tool_output,
+                    "step_index": m.step_index,
+                    "created_at": m.created_at.isoformat() if m.created_at else None,
+                }
+                for m in messages
+            ],
+        })
+
+    return ResponseModel(
+        message="Runs retrieved",
+        data={"runs": run_data}
     )

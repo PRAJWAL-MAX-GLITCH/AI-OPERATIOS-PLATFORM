@@ -81,9 +81,9 @@ class TaskOrchestrator:
             task.status = "failed"
             task.error_message = str(e)
             
-        run.completed_at = datetime.now(timezone.utc)
-        run.total_steps = state.current_step
-        run.state = {"scratchpad": state.scratchpad}
+        run.completed_at = datetime.now(timezone.utc).isoformat()
+        run.steps_taken = state.current_step
+        run.run_metadata = {"scratchpad": state.scratchpad}
         
         await db.commit()
         await db.refresh(run)

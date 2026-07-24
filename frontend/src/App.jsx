@@ -19,6 +19,10 @@ import Projects from './pages/projects/Projects';
 import KnowledgeBases from './pages/rag/KnowledgeBases';
 import Chat from './pages/chat/Chat';
 import Agents from './pages/agents/Agents';
+import AgentDetail from './pages/agents/AgentDetail';
+import AgentTaskComposer from './pages/agents/AgentTaskComposer';
+import AgentTaskRunner from './pages/agents/AgentTaskRunner';
+import AgentHistory from './pages/agents/AgentHistory';
 import Monitoring from './pages/monitoring/Monitoring';
 import Settings from './pages/settings/Settings';
 
@@ -46,9 +50,16 @@ function App() {
             <Route path="/predict" element={<PredictionUI />} />
             <Route path="/rag" element={<KnowledgeBases />} />
             <Route path="/chat" element={<Chat />} />
-            <Route path="/agents" element={<Agents />} />
             <Route path="/monitoring" element={<Monitoring />} />
             <Route path="/settings" element={<Settings />} />
+
+            {/* ── Agent Control Center ── */}
+            {/* Order matters: specific routes before param routes */}
+            <Route path="/agents" element={<Agents />} />
+            <Route path="/agents/history" element={<AgentHistory />} />
+            <Route path="/agents/tasks/:taskId" element={<AgentTaskRunner />} />
+            <Route path="/agents/:agentType/run" element={<AgentTaskComposer />} />
+            <Route path="/agents/:agentType" element={<AgentDetail />} />
           </Route>
         </Route>
 

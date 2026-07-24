@@ -19,17 +19,19 @@ class AgentTask(UUIDBaseModel):
     __tablename__ = "agent_tasks"
 
     user_id:       Mapped[uuid.UUID]       = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    project_id:    Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("projects.id"), nullable=True, index=True)
     agent_type:    Mapped[str]             = mapped_column(String(100), nullable=False)
     title:         Mapped[Optional[str]]   = mapped_column(String(255), nullable=True)
     description:   Mapped[Optional[str]]   = mapped_column(Text, nullable=True)
-    status:        Mapped[str]             = mapped_column(String(50), default="pending")  # pending|running|completed|failed
+    status:        Mapped[str]             = mapped_column(String(50), default="pending")  # pending|running|completed|failed|cancelled
     input_data:    Mapped[Optional[dict[str, Any]]] = mapped_column(JSON().with_variant(JSONB, 'postgresql'), nullable=True)
-    output_data:   Mapped[Optional[dict[str, Any]]] = mapped_column(JSON().with_variant(JSONB, 'postgresql'), nullable=True)
+    result:        Mapped[Optional[dict[str, Any]]] = mapped_column(JSON().with_variant(JSONB, 'postgresql'), nullable=True)
     error_message: Mapped[Optional[str]]   = mapped_column(Text, nullable=True)
     priority:      Mapped[int]             = mapped_column(Integer, default=0)
     celery_task_id: Mapped[Optional[str]]  = mapped_column(String(255), nullable=True)
 
     runs: Mapped[list["AgentRun"]] = relationship("AgentRun", back_populates="task", cascade="all, delete-orphan")
+
 
 
 class AgentRun(UUIDBaseModel):
