@@ -6,6 +6,7 @@ Tracks DL training jobs with epoch-level metrics, checkpoints, and configuration
 from sqlalchemy import String, ForeignKey, Integer, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import JSON
 from typing import Optional, Any
 from app.models.base import UUIDBaseModel
 import uuid
@@ -26,8 +27,8 @@ class DLTrainingJob(UUIDBaseModel):
     target_column:    Mapped[str]         = mapped_column(String(255), nullable=False)
     architecture:     Mapped[str]         = mapped_column(String(100), default="fully_connected")
 
-    # Training hyperparameters (JSONB)
-    hyperparameters:  Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB, nullable=True)
+    # Training hyperparameters (JSON().with_variant(JSONB, 'postgresql'))
+    hyperparameters:  Mapped[Optional[dict[str, Any]]] = mapped_column(JSON().with_variant(JSONB, 'postgresql'), nullable=True)
 
     # Progress tracking
     current_epoch:    Mapped[int]         = mapped_column(Integer, default=0)
@@ -41,8 +42,8 @@ class DLTrainingJob(UUIDBaseModel):
     tensorboard_dir:  Mapped[Optional[str]] = mapped_column(String(1024), nullable=True)
 
     # Epoch-by-epoch metrics history
-    metrics_history:  Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB, nullable=True)
-    final_metrics:    Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB, nullable=True)
+    metrics_history:  Mapped[Optional[dict[str, Any]]] = mapped_column(JSON().with_variant(JSONB, 'postgresql'), nullable=True)
+    final_metrics:    Mapped[Optional[dict[str, Any]]] = mapped_column(JSON().with_variant(JSONB, 'postgresql'), nullable=True)
 
     # MLflow tracking
     mlflow_run_id:    Mapped[Optional[str]] = mapped_column(String(255), nullable=True)

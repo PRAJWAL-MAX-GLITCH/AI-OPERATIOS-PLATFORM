@@ -1,6 +1,7 @@
 from sqlalchemy import String, ForeignKey, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import JSON
 from typing import Optional, Any
 from app.models.base import UUIDBaseModel
 import uuid
@@ -17,10 +18,10 @@ class PredictionLog(UUIDBaseModel):
     confidence:    Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     
     # Store complete payload in JSONB
-    input_payload: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
-    prediction_result: Mapped[Any] = mapped_column(JSONB, nullable=False)
+    input_payload: Mapped[dict[str, Any]] = mapped_column(JSON().with_variant(JSONB, 'postgresql'), nullable=False)
+    prediction_result: Mapped[Any] = mapped_column(JSON().with_variant(JSONB, 'postgresql'), nullable=False)
     
     # If explanations are generated, store the results or metadata
-    explanation:   Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB, nullable=True)
+    explanation:   Mapped[Optional[dict[str, Any]]] = mapped_column(JSON().with_variant(JSONB, 'postgresql'), nullable=True)
 
     project: Mapped["Project"] = relationship("Project", foreign_keys=[project_id])  # type: ignore[name-defined]

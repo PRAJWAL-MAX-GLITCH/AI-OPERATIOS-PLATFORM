@@ -1,6 +1,7 @@
 from sqlalchemy import String, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import JSON
 from typing import Optional, Any
 from app.models.base import UUIDBaseModel
 import uuid
@@ -16,8 +17,8 @@ class TrainingJob(UUIDBaseModel):
     problem_type:  Mapped[str]       = mapped_column(String(50), nullable=False)     # classification|regression|clustering
     target_column: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
-    metrics:       Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB, nullable=True)
-    parameters:    Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB, nullable=True)
+    metrics:       Mapped[Optional[dict[str, Any]]] = mapped_column(JSON().with_variant(JSONB, 'postgresql'), nullable=True)
+    parameters:    Mapped[Optional[dict[str, Any]]] = mapped_column(JSON().with_variant(JSONB, 'postgresql'), nullable=True)
     model_path:    Mapped[Optional[str]] = mapped_column(String(1024), nullable=True)
     error_message: Mapped[Optional[str]] = mapped_column(String(2048), nullable=True)
     

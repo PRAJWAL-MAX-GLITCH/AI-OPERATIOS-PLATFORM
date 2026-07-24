@@ -1,0 +1,26 @@
+{
+  "title": "Enterprise AI Operations",
+  "uid": "ai-ops-1",
+  "panels": [
+    {
+      "title": "ML Training Jobs",
+      "type": "stat",
+      "targets": [{"expr": "ml_training_jobs_total"}]
+    },
+    {
+      "title": "Inference Latency",
+      "type": "timeseries",
+      "targets": [{"expr": "rate(ml_inference_latency_seconds_sum[5m]) / rate(ml_inference_latency_seconds_count[5m])"}]
+    },
+    {
+      "title": "RAG Documents Indexed",
+      "type": "stat",
+      "targets": [{"expr": "rag_documents_indexed_total"}]
+    },
+    {
+      "title": "Agent Execution Success Rate",
+      "type": "gauge",
+      "targets": [{"expr": "sum(rate(agent_runs_total{status='completed'}[5m])) / sum(rate(agent_runs_total[5m]))"}]
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 from sqlalchemy import String, ForeignKey, Boolean, DateTime, BigInteger, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import JSON
 from typing import List, Optional, Any
 from datetime import datetime
 from app.models.base import UUIDBaseModel
@@ -28,7 +29,7 @@ class Project(UUIDBaseModel):
     owner_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
     visibility: Mapped[str] = mapped_column(String(50), default="private", nullable=False)
     status: Mapped[str] = mapped_column(String(50), default="active", nullable=False)
-    tags: Mapped[Optional[list[Any]]] = mapped_column(JSONB, nullable=True)
+    tags: Mapped[Optional[list[Any]]] = mapped_column(JSON().with_variant(JSONB, 'postgresql'), nullable=True)
 
     owner: Mapped["User"] = relationship(back_populates="projects")
     members: Mapped[List["ProjectMember"]] = relationship(back_populates="project")
@@ -62,8 +63,8 @@ class Dataset(UUIDBaseModel):
     row_count: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     column_count: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     status: Mapped[str] = mapped_column(String(50), default="processing", nullable=False)  # processing, ready, error
-    profile: Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB, nullable=True)
-    schema_info: Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB, nullable=True)
+    profile: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON().with_variant(JSONB, 'postgresql'), nullable=True)
+    schema_info: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON().with_variant(JSONB, 'postgresql'), nullable=True)
     project_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("projects.id"), nullable=False)
     created_by_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
 

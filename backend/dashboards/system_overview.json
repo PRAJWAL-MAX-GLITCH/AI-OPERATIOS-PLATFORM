@@ -1,0 +1,26 @@
+{
+  "title": "Enterprise System Overview",
+  "uid": "system-overview-1",
+  "panels": [
+    {
+      "title": "Active Users",
+      "type": "stat",
+      "targets": [{"expr": "active_users_total"}]
+    },
+    {
+      "title": "HTTP Request Rate",
+      "type": "timeseries",
+      "targets": [{"expr": "rate(http_requests_total[5m])"}]
+    },
+    {
+      "title": "Database Active Connections",
+      "type": "timeseries",
+      "targets": [{"expr": "db_connections_active"}]
+    },
+    {
+      "title": "Celery Queue Length",
+      "type": "stat",
+      "targets": [{"expr": "workflow_celery_queue_length"}]
+    }
+  ]
+}

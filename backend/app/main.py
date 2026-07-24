@@ -8,6 +8,9 @@ from app.core.logging import configure_logging
 from app.core.middleware import RequestContextMiddleware
 from app.core.exceptions import AppException, app_exception_handler, global_exception_handler
 from app.api.v1.router import api_router
+from app.core.database import engine
+from app.models.base import Base
+import app.models  # Ensure all models are imported so metadata contains all tables
 
 settings = get_settings()
 
@@ -16,6 +19,15 @@ async def lifespan(app: FastAPI):
     # Startup actions
     configure_logging()
     logger = structlog.get_logger(__name__)
+    
+    # Auto-create tables for local zero-config setup
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("database.tables_created")
+    except Exception as e:
+        logger.warning("database.init_warning", error=str(e))
+
     logger.info("startup.complete", env=settings.APP_ENV, project=settings.PROJECT_NAME)
     yield
     # Shutdown actions

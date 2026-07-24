@@ -6,17 +6,21 @@ import structlog
 logger = structlog.get_logger(__name__)
 settings = get_settings()
 
-# Create the async engine
-# pool_pre_ping=True: Health check connection before use to avoid 'server closed the connection unexpectedly'
-# pool_recycle=3600: Recycle connections after 1 hour
-# pool_size=20, max_overflow=10: Handles burst traffic up to 30 concurrent connections
+engine_kwargs = {
+    "echo": False,
+    "pool_pre_ping": True,
+}
+
+if "sqlite" not in settings.DATABASE_URL:
+    engine_kwargs.update({
+        "pool_recycle": 3600,
+        "pool_size": 20,
+        "max_overflow": 10,
+    })
+
 engine = create_async_engine(
     settings.DATABASE_URL,
-    echo=False,  # Set to True for SQL debugging
-    pool_pre_ping=True,
-    pool_recycle=3600,
-    pool_size=20,
-    max_overflow=10,
+    **engine_kwargs
 )
 
 # Async session factory

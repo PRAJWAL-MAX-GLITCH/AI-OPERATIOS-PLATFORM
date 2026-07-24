@@ -8,6 +8,7 @@ from __future__ import annotations
 from sqlalchemy import String, ForeignKey, Integer, Float, Text, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import JSON
 from typing import Optional, Any
 from app.models.base import UUIDBaseModel
 import uuid
@@ -26,7 +27,7 @@ class KnowledgeBase(UUIDBaseModel):
     index_path:    Mapped[Optional[str]] = mapped_column(String(1024), nullable=True)
     total_documents: Mapped[int]         = mapped_column(Integer, default=0)
     total_chunks:  Mapped[int]           = mapped_column(Integer, default=0)
-    metadata_:     Mapped[Optional[dict[str, Any]]] = mapped_column("metadata", JSONB, nullable=True)
+    metadata_:     Mapped[Optional[dict[str, Any]]] = mapped_column("metadata", JSON().with_variant(JSONB, 'postgresql'), nullable=True)
 
     documents: Mapped[list["RAGDocument"]] = relationship("RAGDocument", back_populates="knowledge_base", cascade="all, delete-orphan")
 
@@ -43,7 +44,7 @@ class RAGDocument(UUIDBaseModel):
     status:      Mapped[str]           = mapped_column(String(50), default="pending")  # pending|processing|indexed|failed
     error_msg:   Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     total_chunks: Mapped[int]          = mapped_column(Integer, default=0)
-    doc_metadata: Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB, nullable=True)
+    doc_metadata: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON().with_variant(JSONB, 'postgresql'), nullable=True)
 
     knowledge_base: Mapped["KnowledgeBase"] = relationship("KnowledgeBase", back_populates="documents")
     chunks: Mapped[list["RAGChunk"]]        = relationship("RAGChunk", back_populates="document", cascade="all, delete-orphan")
@@ -60,7 +61,7 @@ class RAGChunk(UUIDBaseModel):
     char_count:    Mapped[int]       = mapped_column(Integer, default=0)
     token_estimate: Mapped[int]      = mapped_column(Integer, default=0)
     page_number:   Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    chunk_metadata: Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB, nullable=True)
+    chunk_metadata: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON().with_variant(JSONB, 'postgresql'), nullable=True)
 
     document: Mapped["RAGDocument"] = relationship("RAGDocument", back_populates="chunks")
 
@@ -75,7 +76,7 @@ class RAGIndex(UUIDBaseModel):
     embedding_model: Mapped[str]        = mapped_column(String(255),  nullable=False)
     vector_dim:   Mapped[int]           = mapped_column(Integer,      nullable=False)
     total_vectors: Mapped[int]          = mapped_column(Integer,      default=0)
-    build_config: Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB, nullable=True)
+    build_config: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON().with_variant(JSONB, 'postgresql'), nullable=True)
 
 
 class RetrievalLog(UUIDBaseModel):
@@ -87,4 +88,4 @@ class RetrievalLog(UUIDBaseModel):
     top_k:        Mapped[int]            = mapped_column(Integer, default=5)
     results_count: Mapped[int]           = mapped_column(Integer, default=0)
     latency_ms:   Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    retrieved_chunk_ids: Mapped[Optional[list]] = mapped_column(JSONB, nullable=True)
+    retrieved_chunk_ids: Mapped[Optional[list]] = mapped_column(JSON().with_variant(JSONB, 'postgresql'), nullable=True)
