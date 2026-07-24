@@ -12,19 +12,19 @@ export const Button = forwardRef(({
   disabled,
   ...props 
 }, ref) => {
-  const baseStyles = 'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:pointer-events-none disabled:opacity-50';
+  const baseStyles = 'inline-flex items-center justify-center rounded-md text-xs font-semibold tracking-wide uppercase transition-all duration-200 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 select-none';
   
   const variants = {
-    primary: 'bg-primary-600 text-white hover:bg-primary-700 shadow-sm',
-    secondary: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50',
-    danger: 'bg-red-600 text-white hover:bg-red-700 shadow-sm',
-    ghost: 'hover:bg-gray-100 text-gray-700',
+    primary: 'bg-slate-900 text-white hover:bg-slate-800 active:bg-black border border-slate-950/20 shadow-[0_1px_2px_rgba(0,0,0,0.08)]',
+    secondary: 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 hover:text-slate-950 active:bg-slate-100 shadow-[0_1px_2px_rgba(0,0,0,0.02)]',
+    danger: 'bg-red-600 text-white hover:bg-red-500 active:bg-red-700 border border-red-700/20 shadow-[0_1px_2px_rgba(0,0,0,0.08)]',
+    ghost: 'hover:bg-slate-100 hover:text-slate-900 text-slate-500',
   };
 
   const sizes = {
-    sm: 'h-8 px-3 text-xs',
-    md: 'h-10 px-4 py-2',
-    lg: 'h-12 px-8 text-base',
+    sm: 'h-8 px-3 rounded',
+    md: 'h-9 px-4 rounded-md',
+    lg: 'h-10 px-5 rounded-md text-sm',
   };
 
   return (
@@ -34,10 +34,11 @@ export const Button = forwardRef(({
       className={twMerge(clsx(baseStyles, variants[variant], sizes[size], className))}
       {...props}
     >
-      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      {isLoading && <Loader2 className="mr-1.5 h-3 w-3 animate-spin text-current" />}
       {children}
     </button>
   );
 });
 
 Button.displayName = 'Button';
+

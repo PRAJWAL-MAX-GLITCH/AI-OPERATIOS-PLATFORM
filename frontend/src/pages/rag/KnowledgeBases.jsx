@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Database, FileText, Search, Trash2, ArrowRight, Layers, CheckCircle2, Clock } from 'lucide-react';
+import { Plus, Database, FileText, Search, Trash2, ArrowRight, Layers, CheckCircle2, Clock, SlidersHorizontal } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
@@ -79,94 +79,104 @@ export default function KnowledgeBases() {
 
   return (
     <div className="space-y-6">
+      {/* Header Info */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Knowledge Bases</h1>
-          <p className="text-gray-500">Manage vector embeddings, document collections, and retrieval configurations.</p>
+          <h1 className="text-xl font-bold tracking-tight text-slate-900">Knowledge Bases</h1>
+          <p className="text-xs text-slate-500 mt-0.5">Manage vector embeddings, document registries, and cognitive retrieval contexts.</p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Create Knowledge Base
+        <Button variant="primary" size="sm" onClick={() => setIsModalOpen(true)}>
+          <Plus className="w-3.5 h-3.5 mr-1" />
+          Create Collection
         </Button>
       </div>
 
-      <div className="flex items-center space-x-4 bg-white p-4 border border-gray-200 rounded-lg shadow-sm">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+      {/* Filter Row */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
             className="pl-9"
-            placeholder="Search knowledge bases..."
+            placeholder="Search vector collections..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+        <div className="flex items-center gap-2">
+          <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+          <select className="h-9 px-3 py-1.5 bg-white border border-slate-200 rounded text-xs font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-950 focus:border-slate-950">
+            <option>All Indexes</option>
+            <option>Indexed</option>
+            <option>Pending</option>
+          </select>
+        </div>
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-gray-500">Loading knowledge bases...</div>
+        <div className="text-center py-12 text-slate-500 text-xs font-medium">Loading knowledge bases...</div>
       ) : filtered.length === 0 ? (
-        <Card className="text-center py-12">
-          <CardContent>
-            <Database className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-            <h3 className="text-lg font-medium text-gray-900">No Knowledge Bases Found</h3>
-            <p className="text-sm text-gray-500 mt-1">Get started by creating a new knowledge base collection.</p>
-            <Button className="mt-4" onClick={() => setIsModalOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" /> Create Knowledge Base
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="text-center py-16 border border-dashed border-slate-200 rounded-lg bg-white">
+          <Database className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+          <h3 className="text-xs font-semibold text-slate-700">No Knowledge Bases Found</h3>
+          <p className="text-[10px] text-slate-400 mt-0.5">Get started by creating a new vector knowledge base.</p>
+          <Button variant="secondary" size="sm" className="mt-4" onClick={() => setIsModalOpen(true)}>
+            <Plus className="w-3.5 h-3.5 mr-1" /> Create collection
+          </Button>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((kb) => (
             <Card
               key={kb.id}
-              className="hover:shadow-md transition-shadow cursor-pointer border border-gray-200"
+              className="hover:border-slate-400 transition-colors cursor-pointer border border-slate-200/80 flex flex-col justify-between"
               onClick={() => navigate(`/rag/documents?kb_id=${kb.id}`)}
             >
-              <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                <div className="space-y-1">
-                  <CardTitle className="text-base font-bold text-gray-900">{kb.name}</CardTitle>
-                  <p className="text-xs text-gray-500 line-clamp-2">{kb.description || 'No description provided.'}</p>
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="p-2 bg-slate-100 rounded text-slate-700">
+                    <Database className="w-4 h-4" />
+                  </div>
+                  <Badge variant={kb.is_indexed ? 'success' : 'warning'}>
+                    {kb.is_indexed ? 'Indexed' : 'Pending'}
+                  </Badge>
                 </div>
-                <Badge variant={kb.is_indexed ? 'success' : 'warning'}>
-                  {kb.is_indexed ? 'Indexed' : 'Pending Index'}
-                </Badge>
+                <CardTitle className="text-xs font-bold text-slate-900 truncate">{kb.name}</CardTitle>
+                <p className="text-[10px] text-slate-500 line-clamp-2 mt-0.5 leading-relaxed">{kb.description || 'No description provided.'}</p>
               </CardHeader>
-              <CardContent className="pt-4 space-y-4">
-                <div className="grid grid-cols-2 gap-2 text-xs border-t border-gray-100 pt-3 text-gray-600">
+              <CardContent className="pt-2">
+                <div className="grid grid-cols-2 gap-2 text-[10px] font-medium text-slate-500 border-t border-slate-100 pt-3">
                   <div className="flex items-center space-x-1">
-                    <FileText className="w-3.5 h-3.5 text-gray-400" />
-                    <span>{kb.total_documents} Documents</span>
+                    <FileText className="w-3.5 h-3.5 text-slate-400" />
+                    <span className="text-slate-700 font-semibold">{kb.total_documents} documents</span>
                   </div>
                   <div className="flex items-center space-x-1">
-                    <Layers className="w-3.5 h-3.5 text-gray-400" />
-                    <span>{kb.total_chunks} Chunks</span>
+                    <Layers className="w-3.5 h-3.5 text-slate-400" />
+                    <span className="text-slate-700 font-semibold">{kb.total_chunks} chunks</span>
                   </div>
-                  <div className="flex items-center space-x-1 col-span-2">
-                    <Database className="w-3.5 h-3.5 text-gray-400" />
-                    <span>Model: {kb.embedding_model}</span>
+                  <div className="flex items-center space-x-1 col-span-2 text-slate-400">
+                    <span>Embeddings: {kb.embedding_model}</span>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between border-t border-gray-100 pt-3">
+                <div className="flex items-center justify-between border-t border-slate-100 mt-4 pt-3">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-primary-600 hover:text-primary-700 hover:bg-primary-50 p-0"
+                    className="text-slate-900 hover:bg-slate-50 p-0 text-[10px] font-bold"
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate(`/chat?kb_id=${kb.id}`);
                     }}
                   >
-                    Open Chat <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                    Open Assistant <ArrowRight className="w-3 h-3 ml-1" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                    className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 p-1"
                     onClick={(e) => handleDelete(kb.id, e)}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </div>
               </CardContent>
@@ -179,7 +189,7 @@ export default function KnowledgeBases() {
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Create Knowledge Base">
         <form onSubmit={handleCreate} className="space-y-4">
           <Input
-            label="Knowledge Base Name"
+            label="Collection Name"
             placeholder="e.g. Financial Reports 2026"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -187,7 +197,7 @@ export default function KnowledgeBases() {
           />
           <Input
             label="Description"
-            placeholder="Brief overview of the documents in this collection"
+            placeholder="Brief overview of collection contents..."
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           />
@@ -212,12 +222,12 @@ export default function KnowledgeBases() {
             />
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4 border-t">
-            <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>
+          <div className="flex justify-end space-x-2 pt-4 border-t border-slate-100">
+            <Button type="button" variant="ghost" size="sm" onClick={() => setIsModalOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" isLoading={creating}>
-              Create Knowledge Base
+            <Button type="submit" size="sm" isLoading={creating}>
+              Create Collection
             </Button>
           </div>
         </form>
@@ -225,3 +235,4 @@ export default function KnowledgeBases() {
     </div>
   );
 }
+

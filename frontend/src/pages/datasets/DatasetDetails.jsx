@@ -1,14 +1,16 @@
 import { useParams } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
-import { SimpleBarChart, SimpleLineChart } from '../../components/ui/charts/ChartCards';
+import { SimpleBarChart } from '../../components/ui/charts/ChartCards';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
 import { Badge } from '../../components/ui/Badge';
-import { CheckCircle2, AlertTriangle, Info } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Info, ArrowLeft, Database, Activity, RefreshCw } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '../../components/ui/Button';
 
 export default function DatasetDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
-  // Mocked profiling data
   const profile = {
     name: 'customer_churn_2026.csv',
     rows: 15420,
@@ -37,77 +39,91 @@ export default function DatasetDetails() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">{profile.name}</h1>
-          <p className="text-gray-500">Dataset profiling and quality analysis.</p>
+      {/* Header Navigation */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="sm" onClick={() => navigate('/datasets')} className="p-1">
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <div>
+            <div className="flex items-center gap-2">
+              <Database className="w-4 h-4 text-slate-500" />
+              <h1 className="text-lg font-bold text-slate-900">{profile.name}</h1>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">Dataset profiling, schema registry, and anomaly checks.</p>
+          </div>
         </div>
-        <Badge variant={profile.qualityScore > 90 ? 'success' : 'warning'} className="text-sm px-4 py-1">
-          Quality Score: {profile.qualityScore}/100
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant={profile.qualityScore > 90 ? 'success' : 'warning'} className="px-3 py-1 text-xs">
+            Score: {profile.qualityScore}/100
+          </Badge>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-sm text-gray-500 font-medium">Total Rows</p>
-            <p className="text-2xl font-bold">{profile.rows.toLocaleString()}</p>
-          </CardContent>
+      {/* Grid of profiling stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="p-4 border-slate-200/80">
+          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Rows</span>
+          <span className="block text-lg font-extrabold text-slate-900 mt-1">{profile.rows.toLocaleString()}</span>
         </Card>
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-sm text-gray-500 font-medium">Columns</p>
-            <p className="text-2xl font-bold">{profile.columns}</p>
-          </CardContent>
+        <Card className="p-4 border-slate-200/80">
+          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Columns</span>
+          <span className="block text-lg font-extrabold text-slate-900 mt-1">{profile.columns}</span>
         </Card>
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-sm text-gray-500 font-medium">Missing Values</p>
-            <p className="text-2xl font-bold">{profile.missingValues}%</p>
-          </CardContent>
+        <Card className="p-4 border-slate-200/80">
+          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Missing Values</span>
+          <span className="block text-lg font-extrabold text-slate-900 mt-1">{profile.missingValues}%</span>
         </Card>
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-sm text-gray-500 font-medium">Duplicates</p>
-            <p className="text-2xl font-bold">{profile.duplicateRows}</p>
-          </CardContent>
+        <Card className="p-4 border-slate-200/80">
+          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Duplicates</span>
+          <span className="block text-lg font-extrabold text-slate-900 mt-1">{profile.duplicateRows}</span>
         </Card>
       </div>
 
+      {/* Visualization Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <SimpleBarChart 
-          title="Data Quality Dimensions" 
-          data={qualityData} 
-          dataKey="score" 
-          xAxisKey="name"
-          color="#10b981"
-        />
+        <Card>
+          <CardHeader>
+            <CardTitle>Data Quality Dimensions</CardTitle>
+          </CardHeader>
+          <CardContent className="h-64">
+            <SimpleBarChart 
+              data={qualityData} 
+              dataKey="score" 
+              xAxisKey="name"
+              color="#09090b"
+            />
+          </CardContent>
+        </Card>
         
         <Card>
           <CardHeader>
-            <CardTitle>Validation Summary</CardTitle>
+            <div className="flex items-center space-x-2">
+              <Activity className="w-4 h-4 text-slate-500" />
+              <CardTitle>Validation Summary</CardTitle>
+            </div>
           </CardHeader>
-          <CardContent>
-            <ul className="space-y-4">
-              <li className="flex items-start">
-                <CheckCircle2 className="w-5 h-5 text-green-500 mr-2 mt-0.5" />
+          <CardContent className="px-5">
+            <ul className="space-y-3.5 text-xs">
+              <li className="flex items-start gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-medium">Schema Matched</p>
-                  <p className="text-xs text-gray-500">All 24 columns match the expected data types.</p>
+                  <p className="font-semibold text-slate-800">Schema Matched</p>
+                  <p className="text-[10px] text-slate-500">All 24 columns match the expected data types.</p>
                 </div>
               </li>
-              <li className="flex items-start">
-                <AlertTriangle className="w-5 h-5 text-yellow-500 mr-2 mt-0.5" />
+              <li className="flex items-start gap-2.5">
+                <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-medium">Missing Values Detected</p>
-                  <p className="text-xs text-gray-500">Column 'plan_type' has 2.1% missing values. Consider imputation.</p>
+                  <p className="font-semibold text-slate-800">Missing Values Detected</p>
+                  <p className="text-[10px] text-slate-500">Column 'plan_type' has 2.1% missing values. Imputation suggested.</p>
                 </div>
               </li>
-              <li className="flex items-start">
-                <Info className="w-5 h-5 text-blue-500 mr-2 mt-0.5" />
+              <li className="flex items-start gap-2.5">
+                <Info className="w-4 h-4 text-slate-500 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-medium">Imbalance Detected</p>
-                  <p className="text-xs text-gray-500">Target 'churn' has a 15/85 distribution.</p>
+                  <p className="font-semibold text-slate-800">Imbalance Detected</p>
+                  <p className="text-[10px] text-slate-500">Target 'churn' has a unbalanced 15/85 distribution.</p>
                 </div>
               </li>
             </ul>
@@ -115,11 +131,12 @@ export default function DatasetDetails() {
         </Card>
       </div>
 
+      {/* Schema Registry Table */}
       <Card>
         <CardHeader>
           <CardTitle>Schema & Profiling</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
@@ -132,10 +149,12 @@ export default function DatasetDetails() {
             <TableBody>
               {schema.map(col => (
                 <TableRow key={col.name}>
-                  <TableCell className="font-medium">{col.name}</TableCell>
-                  <TableCell><Badge>{col.type}</Badge></TableCell>
-                  <TableCell>{col.missing}</TableCell>
-                  <TableCell>{col.unique}</TableCell>
+                  <TableCell className="font-semibold text-slate-900">{col.name}</TableCell>
+                  <TableCell>
+                    <Badge variant="default">{col.type}</Badge>
+                  </TableCell>
+                  <TableCell className="text-slate-500">{col.missing}</TableCell>
+                  <TableCell className="text-slate-500">{col.unique}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -145,3 +164,4 @@ export default function DatasetDetails() {
     </div>
   );
 }
+

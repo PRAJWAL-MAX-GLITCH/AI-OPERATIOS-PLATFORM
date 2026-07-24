@@ -7,23 +7,23 @@ import {
   Clock, 
   Users, 
   Activity,
-  Search
+  Search,
+  SlidersHorizontal,
+  ChevronRight
 } from 'lucide-react';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import api from '../../services/api';
+import { Badge } from '../../components/ui/Badge';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function Projects() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
 
   const { data: projects, isLoading } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
-      // Mock data for now, would be replaced by actual API call
-      // const response = await api.get('/projects');
-      // return response.data;
       return [
         { id: 1, name: 'Customer Churn Prediction', description: 'Predicting which customers are likely to churn in the next quarter.', status: 'Active', members: 4, updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), models: 3 },
         { id: 2, name: 'Support Ticket Routing', description: 'NLP model to automatically route support tickets to correct departments.', status: 'Active', members: 2, updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), models: 1 },
@@ -32,80 +32,97 @@ export default function Projects() {
     }
   });
 
-  const filteredProjects = projects?.filter(p => 
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredProjects = projects?.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === 'All' || p.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+    <div className="space-y-6">
+      {/* Header section */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Projects</h1>
-          <p className="text-gray-500 mt-1">Manage your team's AI initiatives and workspaces</p>
+          <h1 className="text-xl font-bold tracking-tight text-slate-900">Projects</h1>
+          <p className="text-xs text-slate-500 mt-0.5">Manage workspaces, models, datasets, and pipelines.</p>
         </div>
-        <Button className="flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          New Project
+        <Button variant="primary" size="sm" className="flex items-center gap-1.5">
+          <Plus className="w-3.5 h-3.5" />
+          Create Project
         </Button>
       </div>
 
-      <div className="flex gap-4 mb-6">
+      {/* Filters contextual row */}
+      <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1 relative">
-          <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
           <Input 
             placeholder="Search projects..." 
-            className="pl-10"
+            className="pl-9"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <select className="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 text-sm font-medium text-gray-700">
-          <option>All Status</option>
-          <option>Active</option>
-          <option>Archived</option>
-        </select>
-        <select className="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 text-sm font-medium text-gray-700">
-          <option>Sort by: Recent</option>
-          <option>Sort by: Name</option>
-        </select>
+        <div className="flex items-center gap-2">
+          <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+          <select 
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="h-9 px-3 py-1.5 bg-white border border-slate-200 rounded text-xs font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-950 focus:border-slate-950 transition-colors"
+          >
+            <option value="All">All Statuses</option>
+            <option value="Active">Active</option>
+            <option value="Archived">Archived</option>
+          </select>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Projects listing grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {isLoading ? (
-          <div className="col-span-full py-12 text-center text-gray-500">Loading projects...</div>
+          <div className="col-span-full py-12 text-center text-slate-500 text-xs font-medium">Loading projects...</div>
+        ) : filteredProjects?.length === 0 ? (
+          <div className="col-span-full py-16 text-center border border-dashed border-slate-200 rounded-lg bg-white">
+            <FolderGit2 className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+            <p className="text-xs font-semibold text-slate-700">No projects found</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Create your first project to start tracking ML models.</p>
+          </div>
         ) : filteredProjects?.map((project) => (
-          <Card key={project.id} className="hover:border-primary-500 transition-colors cursor-pointer group">
-            <CardContent className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div className="p-3 bg-primary-50 rounded-lg text-primary-600">
-                  <FolderGit2 className="w-6 h-6" />
+          <Card key={project.id} className="hover:border-slate-400 transition-colors cursor-pointer group flex flex-col justify-between">
+            <CardContent className="p-5 flex flex-col flex-1">
+              <div className="flex justify-between items-start mb-3">
+                <div className="p-2 bg-slate-100 rounded text-slate-700">
+                  <FolderGit2 className="w-4 h-4" />
                 </div>
-                <button className="text-gray-400 hover:text-gray-600">
-                  <MoreVertical className="w-5 h-5" />
-                </button>
+                <Badge variant={project.status === 'Active' ? 'success' : 'default'}>
+                  {project.status}
+                </Badge>
               </div>
               
-              <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors">
-                {project.name}
-              </h3>
-              <p className="text-gray-500 text-sm mb-4 line-clamp-2">
-                {project.description}
-              </p>
+              <div className="space-y-1 mb-4 flex-1">
+                <h3 className="text-sm font-bold text-slate-900 group-hover:text-slate-700 transition-colors flex items-center gap-1">
+                  {project.name}
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                </h3>
+                <p className="text-slate-500 text-xs line-clamp-2 leading-relaxed">
+                  {project.description}
+                </p>
+              </div>
 
-              <div className="flex items-center justify-between text-sm text-gray-500 mt-auto pt-4 border-t border-gray-100">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1.5 tooltip" title="Team Members">
-                    <Users className="w-4 h-4" />
-                    <span>{project.members}</span>
+              <div className="flex items-center justify-between text-[10px] text-slate-400 pt-3 border-t border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1" title="Team Members">
+                    <Users className="w-3 h-3 text-slate-400" />
+                    <span className="font-semibold text-slate-600">{project.members}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 tooltip" title="Deployed Models">
-                    <Activity className="w-4 h-4" />
-                    <span>{project.models}</span>
+                  <div className="flex items-center gap-1" title="Deployed Models">
+                    <Activity className="w-3 h-3 text-slate-400" />
+                    <span className="font-semibold text-slate-600">{project.models} models</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <Clock className="w-4 h-4" />
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
                   <span>{formatDistanceToNow(new Date(project.updatedAt), { addSuffix: true })}</span>
                 </div>
               </div>
@@ -116,3 +133,4 @@ export default function Projects() {
     </div>
   );
 }
+

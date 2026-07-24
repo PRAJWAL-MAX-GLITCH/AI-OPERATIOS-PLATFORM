@@ -4,12 +4,12 @@ import Navbar from '../components/layout/Navbar';
 
 export default function DashboardLayout() {
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-slate-50/50">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Navbar />
-        <main className="flex-1 overflow-y-auto p-8">
-          <div className="mx-auto max-w-7xl">
+        <main className="flex-1 overflow-y-auto px-6 py-6 lg:px-8">
+          <div className="mx-auto max-w-7xl space-y-6">
             <Outlet />
           </div>
         </main>
@@ -17,3 +17,4 @@ export default function DashboardLayout() {
     </div>
   );
 }
+
