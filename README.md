@@ -51,7 +51,7 @@ Built using **FastAPI**, **SQLAlchemy 2.0 (Async)**, **PostgreSQL**, **MLflow**,
 
 ### 6. 🚀 Enterprise Serving & Frontend
 - **Model/LLM Serving:** FastAPI high-concurrency endpoints with SHAP explainability.
-- **React Frontend:** Full-featured Dashboard for workspace management, experiment tracking, and real-time chat/agent visualization.
+- **Premium React Frontend:** Comprehensive modern Dashboard featuring a high-end SaaS aesthetic, slate/zinc color system, and redesigned UI components for workspace management, experiment tracking, and real-time chat/agent visualization.
 
 ---
 
